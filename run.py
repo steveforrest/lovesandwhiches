@@ -3,6 +3,7 @@
 import gspread
 from google.oauth2.service_account import Credentials
 from pprint import pprint
+import math
 # python code goes here
 
 SCOPE = [
@@ -90,27 +91,39 @@ def update_surplus_worksheet(surplus_data):
 """
 def update_worksheet(data, worksheet):
     """
-    recieves a list of integers to be inserted into a work sheet
+    Receives a list of integers to be inserted into a worksheet
+    Update the relevant worksheet with the data provided
     """
-    print(f'Updating {work_sheet} work sheet...\n')
+    print(f"Updating {worksheet} worksheet...\n")
     worksheet_to_update = SHEET.worksheet(worksheet)
     worksheet_to_update.append_row(data)
-    print(f'{worksheet} worksheet updated succesfully \n')
+    print(f"{worksheet} worksheet updated successfully\n")
 
-def get_last5_entries_sales():
+def get_last_5_entries_sales():
     """
     collect columns of data from sales worksheet, collecting the last 5 entries for each sandwich and returns the data as a list of lists
     """
     sales = SHEET.worksheet("sales")
-    #column = sales.col_values(3)
-    #print(column)
-
     columns = []
     for ind in range(1, 7):
         column = sales.col_values(ind)
         columns.append(column[-5:])
-    pprint(columns)
+    return columns
 
+def calculate_stock_data(data):
+    """
+    calculate average stock data
+    """
+    print("Calculating stock data...\n")
+    new_stock_data = []
+    for column in data:
+        int_column = [int(num) for num in column]
+        average = sum(int_column) / len(int_column)
+        stock_num = average * 1.1
+        new_stock_data.append(round(stock_num))
+    return new_stock_data
+
+    
 def main():
     """
     Run all program functions
@@ -120,8 +133,11 @@ def main():
     update_worksheet(sales_data, 'sales')
     surplus_data = calculate_surplus_data(sales_data)
     update_worksheet(surplus_data, 'surplus')
-
+    sales_columns = get_last_5_entries_sales()
+    stock_data = calculate_stock_data(sales_columns)
+    update_worksheet(stock_data, 'stock')
+    
 print('Welcome to love sandwiches data automation')
-#main()
 
-get_last5_entries_sales()
+main()
+
